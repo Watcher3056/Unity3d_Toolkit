@@ -1,6 +1,7 @@
 # Unity3d_Toolkit
 Powerful tools to cover some use-cases in any unity3d game from me!
 All parts of toolkit tested and completely working, but could be not intuitive for someone else who is not me, so you can perceive current state as "Alpha Release".
+NO EXAMPLES INCLUDED for now.
 
 # **Requirements**
 Remember: you SHOULD buy assets that is marked as "Paid" before use them.
