@@ -6,12 +6,16 @@ All parts of toolkit tested and completely working, but could be not intuitive f
 Remember: you SHOULD buy assets that is marked as "Paid" before use them.
 ### **Hard Requirements**
 - Odin Inspector(Paid): https://assetstore.unity.com/packages/tools/utilities/odin-inspector-and-serializer-89041
+-- Required for editor interface drawing
 - Odin Validator(Paid): https://odininspector.com/odin-project-validator
+-- Required by GUID system
 - DOTWeen(Free)
 
 ### **Soft Requirements**
-- Animancer Lite(Free) (Panel.cs, Extensions.cs)
-- Easy Save 2(Paid) (ProcessorSaveLoad.cs): https://assetstore.unity.com/?q=Easy+Save&orderBy=1
+- Animancer Lite(Free)
+-- Required by Panel.cs, Extensions.cs
+- Easy Save 2(Paid): https://assetstore.unity.com/?q=Easy+Save&orderBy=1
+-- Required by ProcessorSaveLoad.cs
 
 You can remove or replace code associated with those assets. Replace Animancer usages with Animator. Remove ProcessorSaveLoad.cs or replace "Easy Save 2" usages with your solutions.
 
