@@ -52,7 +52,6 @@ namespace TeamAlpha.Source
             SetupStatePlay();
             SetupStateFailed();
             SetupStateWin();
-            SetupStateSettings();
         }
         public void ExitGame()
         {
