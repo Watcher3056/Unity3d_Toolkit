@@ -34,18 +34,13 @@ namespace TeamAlpha.Source
         public enum FadeMode { In, Out }
         public enum State { None, Opened, Closed }
 
-        [Required]
-        public NamedAnimancerComponent animancer;
-        [Required]
-        public AnimationClip animOpen;
-        [Required]
-        public AnimationClip animClose;
+        public PanelViewBehaviour viewBehaviour;
         public bool fading;
-        public bool hideOnStart = true;
         [ShowIf("fading")]
-        public bool closeOnShadowClick;
-        public bool playShowHideAudio;
+        public bool closeOnFadeClick;
+        public bool hideOnStart = true;
         public bool saveInitialPosition;
+        public bool playShowHideAudio;
         [ShowIf("playShowHideAudio")]
         public bool customAudioOnShow;
         [ShowIf("ShowAudioOnShow")]
@@ -85,11 +80,11 @@ namespace TeamAlpha.Source
             {
                 if (hideOnStart)
                 {
-                    ClosePanel(true, true);
+                    ClosePanel(null, true, true);
                     gameObject.SetActive(false);
                 }
                 else
-                    OpenPanel(true, true);
+                    OpenPanel(null, true, true);
             }
         }
         public void TogglePanel(bool arg)
@@ -99,81 +94,76 @@ namespace TeamAlpha.Source
             else
                 ClosePanel();
         }
-
-        //Do not place here logic as On Panel Show
-        public void OpenPanel(bool silent = false, bool noEvent = false)
+        public void OpenPanel(Action onComplete = default, bool muteAudio = false, bool noEvent = false)
         {
-            gameObject.SetActive(true);
-            PanelFade(FadeMode.In, silent, noEvent);
-        }
-        //Do not place here logic as On Panels Hide
-        public void ClosePanel(bool silent = false, bool noEvent = false)
-        {
-            PanelFade(FadeMode.Out, silent, noEvent);
-        }
-        private void PanelFade(FadeMode fadeMode, bool silent = false, bool noEvent = false)
-        {
-            if ((curState == State.Opened && fadeMode == FadeMode.In) ||
-                (curState == State.Closed && fadeMode == FadeMode.Out))
+            if (curState == State.Opened)
             {
-                if (fadeMode == FadeMode.In)
-                    transform.SetAsLastSibling();
+                transform.SetAsLastSibling();
                 return;
             }
 
-            if (fadeMode == FadeMode.In)
+            curShowedPanels.Add(this);
+            if (fading && PanelShadow.Default.panel != this)
+                PanelShadow.Default.panel.OpenPanel();
+            transform.SetAsLastSibling();
+            if (playShowHideAudio && !muteAudio)
             {
-                curShowedPanels.Add(this);
-                if (fading && PanelShadow.Default.panel != this)
-                    PanelShadow.Default.panel.OpenPanel();
-                transform.SetAsLastSibling();
-                curState = State.Opened;
-                animancer.Play(animOpen);
-                if (playShowHideAudio && !silent)
-                {
-                    if (customAudioOnShow)
-                        audioOnShow.Play(ProcessorSoundPool.PoolLevel.Global);
-                    else
-                        DataGameMain.Default.audioOnPanelShow.Play(ProcessorSoundPool.PoolLevel.Global);
-                }
-                OnPanelShow.Invoke();
+                if (customAudioOnShow)
+                    audioOnShow.Play(ProcessorSoundPool.PoolLevel.Global);
+                else
+                    DataGameMain.Default.audioOnPanelShow.Play(ProcessorSoundPool.PoolLevel.Global);
             }
-            else if (fadeMode == FadeMode.Out)
-            {
-                if (curShowedPanels.Contains(this))
-                    curShowedPanels.Remove(this);
-                if (fading)
-                {
-                    Panel panelWithFading = curShowedPanels.Find((p) => p.fading);
-                    if (curShowedPanels.Contains(PanelShadow.Default.panel) && panelWithFading == null)
-                        PanelShadow.Default.panel.ClosePanel();
-                }
+            curState = State.Opened;
 
-                List<Panel> fadedPanels = new List<Panel>(curShowedPanels.FindAll(p => p.fading));
-                for (int i = 0; i < fadedPanels.Count; i++)
-                {
-                    Panel panel = fadedPanels[i];
-                    if (i + 1 == fadedPanels.Count)
-                        PanelShadow.Default.panel.transform.SetAsLastSibling();
-                    if (panel.fading)
-                        panel.transform.SetAsLastSibling();
-                }
-                curState = State.Closed;
-                animancer.Play(animClose).Events.OnEnd = () =>
+            gameObject.SetActive(true);
+            if (viewBehaviour != null)
+                viewBehaviour.HandlePanelOpen(onComplete);
+            if (noEvent == false)
+                OnPanelShow.Invoke();
+        }
+        //Do not place here logic as On Panels Hide
+        public void ClosePanel(Action onComplete = default, bool muteAudio = false, bool noEvent = false)
+        {
+            if (curState == State.Closed)
+            {
+                return;
+            }
+
+            if (curShowedPanels.Contains(this))
+                curShowedPanels.Remove(this);
+            if (fading)
+            {
+                Panel panelWithFading = curShowedPanels.Find((p) => p.fading);
+                if (curShowedPanels.Contains(PanelShadow.Default.panel) && panelWithFading == null)
+                    PanelShadow.Default.panel.ClosePanel();
+            }
+
+            List<Panel> fadedPanels = new List<Panel>(curShowedPanels.FindAll(p => p.fading));
+            for (int i = 0; i < fadedPanels.Count; i++)
+            {
+                Panel panel = fadedPanels[i];
+                if (i + 1 == fadedPanels.Count)
+                    PanelShadow.Default.panel.transform.SetAsLastSibling();
+                if (panel.fading)
+                    panel.transform.SetAsLastSibling();
+            }
+            if (playShowHideAudio && !muteAudio)
+            {
+                if (customAudioOnHide)
+                    audioOnHide.Play(ProcessorSoundPool.PoolLevel.Global);
+                else
+                    DataGameMain.Default.audioOnPanelHide.Play(ProcessorSoundPool.PoolLevel.Global);
+            }
+            curState = State.Closed;
+            if (viewBehaviour != null)
+                viewBehaviour.HandlePanelClose(() =>
                 {
                     gameObject.SetActive(false);
-                };
-                if (playShowHideAudio && !silent)
-                {
-                    if (customAudioOnHide)
-                        audioOnHide.Play(ProcessorSoundPool.PoolLevel.Global);
-                    else
-                        DataGameMain.Default.audioOnPanelHide.Play(ProcessorSoundPool.PoolLevel.Global);
-                }
+                    if (onComplete != null)
+                        onComplete.Invoke();
+                });
+            if (noEvent == false)
                 OnPanelHide.Invoke();
-            }
-
-            //UIManager.Default.panelLoading.transform.SetAsLastSibling();
         }
         private void OnDrawGizmos()
         {

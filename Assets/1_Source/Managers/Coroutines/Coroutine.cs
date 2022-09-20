@@ -23,9 +23,11 @@ namespace TeamAlpha.Source
             private set => isPlaying = value;
         }
         private bool isPlaying;
-        public UpdateType UpdateMode { get; set; }
+        public UpdateType UpdateMode { get; private set; }
         public bool IsAlive { get; private set; }
         public WaitFor WaitFor { get; set; }
+        private Action OnCompleteCallback { get; set; }
+        public event Action<Coroutine> OnCompleteEvent = (c) => { };
         private IEnumerator enumerator;
         public Coroutine(IEnumerator enumerator)
         {
@@ -55,6 +57,8 @@ namespace TeamAlpha.Source
             Pause();
             IsAlive = false;
             enumerator = null;
+            OnCompleteCallback.Invoke();
+            OnCompleteEvent.Invoke(this);
         }
         public void Tick()
         {
@@ -99,6 +103,11 @@ namespace TeamAlpha.Source
 
             return result;
         }
+        public Coroutine OnComplete(Action onComplete)
+        {
+            this.OnCompleteCallback = onComplete;
+            return this;
+        }
         public Coroutine SetUpdateType(UpdateType updateType)
         {
             UpdateMode = updateType;
@@ -109,12 +118,31 @@ namespace TeamAlpha.Source
     {
         public float Time { get; set; }
         public float TimeUnscaled { get; set; }
-        public bool Wait => Time > 0f || TimeUnscaled > 0f;
+        public bool Wait => Time > 0f || TimeUnscaled > 0f || coroutinesAwaiting > 0;
+        public int coroutinesAwaiting;
 
-        public WaitFor(float time = 0f, float timeUnscaled = 0f)
+        public WaitFor(float time = 0f, float timeUnscaled = 0f, params Coroutine[] coroutines)
         {
             this.Time = time;
             this.TimeUnscaled = timeUnscaled;
+            TryAssignCoroutinesToWait(coroutines);
+        }
+        public WaitFor(params Coroutine[] coroutines)
+        {
+            TryAssignCoroutinesToWait(coroutines);
+        }
+        private void TryAssignCoroutinesToWait(params Coroutine[] coroutines)
+        {
+            this.coroutinesAwaiting = coroutines.Length;
+            foreach (Coroutine coroutine in coroutines)
+            {
+                coroutine.OnCompleteEvent += HandleCoroutineCompleted;
+            }
+        }
+        private void HandleCoroutineCompleted(Coroutine coroutine)
+        {
+            coroutine.OnCompleteEvent -= HandleCoroutineCompleted;
+            coroutinesAwaiting--;
         }
     }
 }

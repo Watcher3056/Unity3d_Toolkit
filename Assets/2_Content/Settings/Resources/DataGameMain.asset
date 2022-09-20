@@ -15,7 +15,6 @@ MonoBehaviour:
   audioOnPanelShow:
     clip: {fileID: 0}
     volume: 1
-    haptic: 9
     fadeInOutTime: 0.25
     randomizePitch: 0
     pitchPercentRandomization: {x: 0, y: 0}
@@ -26,7 +25,6 @@ MonoBehaviour:
   audioOnPanelHide:
     clip: {fileID: 0}
     volume: 1
-    haptic: 9
     fadeInOutTime: 0.25
     randomizePitch: 0
     pitchPercentRandomization: {x: 0, y: 0}

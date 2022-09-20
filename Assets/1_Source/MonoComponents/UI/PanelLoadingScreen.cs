@@ -62,21 +62,24 @@ namespace TeamAlpha.Source
         }
         public void ToggleLoadingScreen(bool arg, Action onComplete = default)
         {
+            Coroutine.Start(_ToggleLoadingScreen(arg, onComplete));
+        }
+        private IEnumerator _ToggleLoadingScreen(bool arg, Action onComplete = default)
+        {
+            void OnComplete()
+            {
+                if (onComplete != null)
+                    onComplete.Invoke();
+                loadingScreenOpened = arg;
+            }
+
             if (arg)
-                panel.OpenPanel();
+                panel.OpenPanel(OnComplete);
             else
             {
-                ProcessorDeferredOperation.Default.Add(() => panel.ClosePanel(), true, false, 0.5f);
+                yield return new WaitFor(0.5f);
+                panel.ClosePanel(OnComplete);
             }
-            ProcessorDeferredOperation.Default.Add(() =>
-            {
-                panel.animancer.States.Current.Events.OnEnd = () =>
-                {
-                    if (onComplete != null)
-                        onComplete.Invoke();
-                    loadingScreenOpened = arg;
-                };
-            }, true);
         }
         public void SetProgress(float progress)
         {

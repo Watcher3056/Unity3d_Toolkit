@@ -53,10 +53,6 @@ namespace TeamAlpha.Source
             SetupStateFailed();
             SetupStateWin();
         }
-        public void ExitGame()
-        {
-            Application.Quit();
-        }
         public void SetHighlightUIElement(GameObject go, bool arg)
         {
             Canvas canvas = null;

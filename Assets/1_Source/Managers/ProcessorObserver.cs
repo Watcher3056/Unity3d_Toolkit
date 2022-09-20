@@ -77,13 +77,15 @@ namespace TeamAlpha.Source
                 curIndex++;
             }
         }
-        public Observer Add<T>(Func<T> propertySelector, Action<T> callback, bool invokeOnceOnUpdate)
+        public Observer Add<T>(Func<T> propertySelector, Action<T> callback, bool invokeOnceOnUpdate, object source, object target)
         {
             Observer observer = new Observer();
             observer.propertySelector = () => propertySelector();
             observer.prevValue = propertySelector.Invoke();
             observer.callback = arg => callback((T)arg);
             observer.invokeOnceOnUpdate = invokeOnceOnUpdate;
+            observer.SetSource(source);
+            observer.SetTarget(target);
             observers.Add(observer);
             return observer;
         }

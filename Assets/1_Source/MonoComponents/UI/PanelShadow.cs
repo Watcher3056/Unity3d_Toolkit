@@ -21,7 +21,7 @@ namespace TeamAlpha.Source
         }
         private void HandleClick()
         {
-            if (Panel.UpperShaded != null && Panel.UpperShaded.closeOnShadowClick)
+            if (Panel.UpperShaded != null && Panel.UpperShaded.closeOnFadeClick)
                 Panel.UpperShaded.ClosePanel();
         }
     }
